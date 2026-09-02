@@ -1,0 +1,23 @@
+{{- $root := . -}}
+{{- range $service := list "auth" "network" "aws" }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $service }}-database-isolation
+  labels:
+    {{- include "platform.labels" $root | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $service }}-postgres
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ $service }}-service
+      ports:
+        - protocol: TCP
+          port: 5432
+{{- end }}

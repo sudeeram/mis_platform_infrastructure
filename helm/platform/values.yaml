@@ -1,0 +1,41 @@
+global:
+  host: platform.local
+  imagePullPolicy: IfNotPresent
+
+images:
+  frontend: platform/frontend:dev
+  auth: platform/auth:dev
+  network: platform/network:dev
+  aws: platform/aws:dev
+  postgres: postgres:17-alpine
+
+replicas:
+  frontend: 1
+  auth: 1
+  network: 1
+  aws: 1
+
+developmentSecrets:
+  authDatabasePassword: auth-dev-password
+  networkDatabasePassword: network-dev-password
+  awsDatabasePassword: aws-dev-password
+  authDjangoSecret: change-auth-development-secret
+  networkDjangoSecret: change-network-development-secret
+  awsDjangoSecret: change-aws-development-secret
+
+saml:
+  enabled: false
+  tenantId: ""
+  idpEntityId: ""
+  objectIdAttribute: http://schemas.microsoft.com/identity/claims/objectidentifier
+
+postgres:
+  storage: 1Gi
+
+resources:
+  application:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+  postgres:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }

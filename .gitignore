@@ -1,0 +1,37 @@
+# Generated development secrets
+generated-secrets/
+
+# Local environment and Helm values; keep safe examples if added
+.env*
+!.env.example
+*.local.yaml
+
+# Environment-specific keys, certificates, and identity metadata
+*.pem
+*.key
+*.crt
+*.p12
+entra-idp-metadata.xml
+
+# Local Kubernetes client configuration
+kubeconfig
+kubeconfig.*
+!kubeconfig.example
+
+# Packaged Helm charts
+*.tgz
+
+# Terraform working data and state
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Operating-system and editor metadata
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,30 @@
+{{- $root := . -}}
+{{- range $service := list "auth" "network" "aws" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $service }}-service-config
+  labels:
+    {{- include "platform.labels" $root | nindent 4 }}
+data:
+  POSTGRES_HOST: {{ $service }}-postgres
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: {{ $service }}
+  POSTGRES_USER: {{ $service }}
+  DJANGO_DEBUG: "true"
+  DJANGO_ALLOWED_HOSTS: "*"
+  PLATFORM_PUBLIC_ORIGIN: "http://{{ $root.Values.global.host }}"
+  JWT_ISSUER: "http://{{ $root.Values.global.host }}/api/auth"
+  JWT_AUDIENCE: "platform-api"
+  {{- if eq $service "auth" }}
+  CSRF_TRUSTED_ORIGINS: "http://{{ $root.Values.global.host }}"
+  AUTH_COOKIE_SECURE: "false"
+  SAML_ENABLED: {{ $root.Values.saml.enabled | quote }}
+  SAML_TENANT_ID: {{ $root.Values.saml.tenantId | quote }}
+  SAML_IDP_ENTITY_ID: {{ $root.Values.saml.idpEntityId | quote }}
+  SAML_ENTRA_OBJECT_ID_ATTRIBUTE: {{ $root.Values.saml.objectIdAttribute | quote }}
+  {{- else }}
+  JWT_JWKS_URL: "http://auth-service:8000/api/auth/.well-known/jwks.json"
+  {{- end }}
+{{- end }}

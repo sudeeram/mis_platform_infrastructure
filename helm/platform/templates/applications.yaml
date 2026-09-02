@@ -1,0 +1,100 @@
+{{- $root := . -}}
+{{- range $service := list "auth" "network" "aws" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $service }}-service
+  labels:
+    app.kubernetes.io/name: {{ $service }}-service
+    {{- include "platform.labels" $root | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ $service }}-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $service }}-service
+  labels:
+    app.kubernetes.io/name: {{ $service }}-service
+    {{- include "platform.labels" $root | nindent 4 }}
+spec:
+  replicas: {{ index $root.Values.replicas $service }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $service }}-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $service }}-service
+        app.kubernetes.io/component: application
+        app.kubernetes.io/part-of: operations-platform
+    spec:
+      initContainers:
+        - name: migrate
+          image: {{ index $root.Values.images $service }}
+          imagePullPolicy: {{ $root.Values.global.imagePullPolicy }}
+          command: ["python", "manage.py", "migrate", "--noinput"]
+          envFrom:
+            - configMapRef: { name: {{ $service }}-service-config }
+          env:
+            - name: DJANGO_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-django-secret } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-postgres-password } }
+        {{- if eq $service "auth" }}
+        - name: seed-rbac
+          image: {{ index $root.Values.images $service }}
+          imagePullPolicy: {{ $root.Values.global.imagePullPolicy }}
+          command: ["python", "manage.py", "seed_rbac"]
+          envFrom:
+            - configMapRef: { name: auth-service-config }
+          env:
+            - name: DJANGO_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: auth-django-secret } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: auth-postgres-password } }
+        {{- end }}
+      containers:
+        - name: application
+          image: {{ index $root.Values.images $service }}
+          imagePullPolicy: {{ $root.Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+          envFrom:
+            - configMapRef: { name: {{ $service }}-service-config }
+          env:
+            - name: DJANGO_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-django-secret } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-postgres-password } }
+          readinessProbe:
+            httpGet: { path: /api/{{ $service }}/health/ready, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /api/{{ $service }}/health/live, port: http }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            {{- toYaml $root.Values.resources.application | nindent 12 }}
+          {{- if eq $service "auth" }}
+          volumeMounts:
+            - name: auth-crypto
+              mountPath: /run/secrets
+              readOnly: true
+          {{- end }}
+      {{- if eq $service "auth" }}
+      volumes:
+        - name: auth-crypto
+          secret:
+            secretName: platform-auth-crypto
+      {{- end }}
+{{- end }}
