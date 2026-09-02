@@ -1,5 +1,11 @@
 # Platform Infrastructure
 
+## Contribution workflow
+
+Run `./scripts/setup-git-hooks.sh` once after cloning. All work must use a
+`feature/*`, `hotfix/*`, or `bugfix/*` branch and reach `main` through a pull
+request.
+
 Helm-based Minikube development environment for the operations platform. It deploys NGINX Ingress, four application workloads, and one isolated PostgreSQL StatefulSet per Django service.
 
 ## Prerequisites
