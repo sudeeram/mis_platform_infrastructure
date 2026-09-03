@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+branch="$(git symbolic-ref --quiet --short HEAD || true)"
+
+case "$branch" in
+  feature/?*|hotfix/?*|bugfix/?*)
+    exit 0
+    ;;
+  main|master)
+    printf '%s\n' "Direct commits to $branch are prohibited." >&2
+    ;;
+  "")
+    printf '%s\n' "Commits from a detached HEAD are prohibited." >&2
+    ;;
+  *)
+    printf '%s\n' "Branch '$branch' is not permitted." >&2
+    ;;
+esac
+
+printf '%s\n' "Use feature/<name>, hotfix/<name>, or bugfix/<name>." >&2
+exit 1

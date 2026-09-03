@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/master)
+      printf '%s\n' "Direct pushes to ${remote_ref#refs/heads/} are prohibited." >&2
+      exit 1
+      ;;
+    refs/heads/feature/?*|refs/heads/hotfix/?*|refs/heads/bugfix/?*)
+      ;;
+    refs/heads/*)
+      printf '%s\n' "Push rejected: '${remote_ref#refs/heads/}' is not an allowed branch name." >&2
+      printf '%s\n' "Use feature/<name>, hotfix/<name>, or bugfix/<name>." >&2
+      exit 1
+      ;;
+  esac
+done
