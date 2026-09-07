@@ -47,8 +47,8 @@ spec:
           env:
             - name: DJANGO_SECRET_KEY
               valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-django-secret } }
-            - name: POSTGRES_PASSWORD
-              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-postgres-password } }
+            - name: MYSQL_PASSWORD
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-mysql-password } }
         {{- if eq $service "auth" }}
         - name: seed-rbac
           image: {{ index $root.Values.images $service }}
@@ -59,8 +59,8 @@ spec:
           env:
             - name: DJANGO_SECRET_KEY
               valueFrom: { secretKeyRef: { name: platform-development-secrets, key: auth-django-secret } }
-            - name: POSTGRES_PASSWORD
-              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: auth-postgres-password } }
+            - name: MYSQL_PASSWORD
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: auth-mysql-password } }
         {{- end }}
       containers:
         - name: application
@@ -74,8 +74,8 @@ spec:
           env:
             - name: DJANGO_SECRET_KEY
               valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-django-secret } }
-            - name: POSTGRES_PASSWORD
-              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-postgres-password } }
+            - name: MYSQL_PASSWORD
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-mysql-password } }
           readinessProbe:
             httpGet: { path: /api/{{ $service }}/health/ready, port: http }
             initialDelaySeconds: 5

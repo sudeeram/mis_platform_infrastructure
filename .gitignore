@@ -1,5 +1,6 @@
 # Generated development secrets
 generated-secrets/
+.local-run/
 
 # Local environment and Helm values; keep safe examples if added
 .env*

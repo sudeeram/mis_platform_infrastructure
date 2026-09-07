@@ -10,7 +10,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: {{ $service }}-postgres
+      app.kubernetes.io/name: {{ $service }}-mysql
   policyTypes: [Ingress]
   ingress:
     - from:
@@ -19,5 +19,5 @@ spec:
               app.kubernetes.io/name: {{ $service }}-service
       ports:
         - protocol: TCP
-          port: 5432
+          port: 3306
 {{- end }}
