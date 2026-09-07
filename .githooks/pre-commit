@@ -7,7 +7,7 @@ case "$branch" in
   feature/?*|hotfix/?*|bugfix/?*)
     exit 0
     ;;
-  main|master)
+  develop|main|master)
     printf '%s\n' "Direct commits to $branch are prohibited." >&2
     ;;
   "")

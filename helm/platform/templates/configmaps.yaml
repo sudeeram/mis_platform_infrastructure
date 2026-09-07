@@ -8,10 +8,10 @@ metadata:
   labels:
     {{- include "platform.labels" $root | nindent 4 }}
 data:
-  POSTGRES_HOST: {{ $service }}-postgres
-  POSTGRES_PORT: "5432"
-  POSTGRES_DB: {{ $service }}
-  POSTGRES_USER: {{ $service }}
+  MYSQL_HOST: {{ $service }}-mysql
+  MYSQL_PORT: "3306"
+  MYSQL_DATABASE: mis_{{ $service }}
+  MYSQL_USER: mis_{{ $service }}
   DJANGO_DEBUG: "true"
   DJANGO_ALLOWED_HOSTS: "*"
   PLATFORM_PUBLIC_ORIGIN: "http://{{ $root.Values.global.host }}"

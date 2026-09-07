@@ -7,7 +7,7 @@ images:
   auth: platform/auth:dev
   network: platform/network:dev
   aws: platform/aws:dev
-  postgres: postgres:17-alpine
+  mysql: mysql:8.4
 
 replicas:
   frontend: 1
@@ -19,6 +19,9 @@ developmentSecrets:
   authDatabasePassword: auth-dev-password
   networkDatabasePassword: network-dev-password
   awsDatabasePassword: aws-dev-password
+  authDatabaseRootPassword: auth-root-dev-password
+  networkDatabaseRootPassword: network-root-dev-password
+  awsDatabaseRootPassword: aws-root-dev-password
   authDjangoSecret: change-auth-development-secret
   networkDjangoSecret: change-network-development-secret
   awsDjangoSecret: change-aws-development-secret
@@ -29,13 +32,13 @@ saml:
   idpEntityId: ""
   objectIdAttribute: http://schemas.microsoft.com/identity/claims/objectidentifier
 
-postgres:
+mysql:
   storage: 1Gi
 
 resources:
   application:
     requests: { cpu: 50m, memory: 128Mi }
     limits: { cpu: 500m, memory: 512Mi }
-  postgres:
+  mysql:
     requests: { cpu: 50m, memory: 128Mi }
     limits: { cpu: 500m, memory: 512Mi }

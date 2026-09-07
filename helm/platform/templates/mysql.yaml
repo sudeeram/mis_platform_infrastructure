@@ -1,0 +1,82 @@
+{{- $root := . -}}
+{{- range $service := list "auth" "network" "aws" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $service }}-mysql
+  labels:
+    app.kubernetes.io/name: {{ $service }}-mysql
+    {{- include "platform.labels" $root | nindent 4 }}
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: {{ $service }}-mysql
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $service }}-mysql
+  labels:
+    app.kubernetes.io/name: {{ $service }}-mysql
+    {{- include "platform.labels" $root | nindent 4 }}
+spec:
+  serviceName: {{ $service }}-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $service }}-mysql
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $service }}-mysql
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: operations-platform
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: mysql
+          image: {{ $root.Values.images.mysql }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mysql
+              containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: mis_{{ $service }}
+            - name: MYSQL_USER
+              value: mis_{{ $service }}
+            - name: MYSQL_PASSWORD
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-mysql-password } }
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom: { secretKeyRef: { name: platform-development-secrets, key: {{ $service }}-mysql-root-password } }
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$MYSQL_ROOT_PASSWORD\""]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$MYSQL_ROOT_PASSWORD\""]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml $root.Values.resources.mysql | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ $root.Values.mysql.storage }}
+{{- end }}
