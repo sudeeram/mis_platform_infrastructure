@@ -4,6 +4,9 @@ Development orchestration and Helm deployment for the operations platform. The
 browser reaches only the frontend gateway; it routes `/api/auth`, `/api/network`,
 and `/api/aws` to the independently owned services.
 
+The standalone, build-from-empty-repositories specification is available in
+[`docs/COMPLETE_BUILD_BLUEPRINT.md`](docs/COMPLETE_BUILD_BLUEPRINT.md).
+
 ## Contribution and delivery workflow
 
 Run `./scripts/setup-git-hooks.sh` once after cloning.
